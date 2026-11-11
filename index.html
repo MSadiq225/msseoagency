@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>msseoagency — MS SEO Agency Outreach Tool</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>msseoagency <span>— MS SEO Agency</span></h1>
+    <p>Off-page SEO guest-posting outreach: client finding, drafts, parallel sending, Verified / Unverified checks. Data is saved in <b>this browser only</b> (localStorage). <b>Universal tool:</b> kisi ek client ke liye nahi — purane, naye aur future sab clients ke liye. Macfox, ELEGOO, Casino, Qiolor aur Black Friday sirf presets/examples hain; <b>+ Naya Client</b> se koi bhi client add karo.</p>
+  </div>
+  <div class="row"><span class="chip unverified" id="backendChip">Backend: not checked</span><button class="btn ghost" onclick="checkBackend()">Check backend</button></div>
+</header>
+<nav id="tabs">
+  <button data-tab="dashboard" class="active">Dashboard</button>
+  <button data-tab="clients">All Clients</button>
+  <button data-tab="team">Team &amp; Senders</button>
+  <button data-tab="prospects">Prospects</button>
+  <button data-tab="templates">Templates</button>
+  <button data-tab="campaign">Campaign &amp; Queue</button>
+  <button data-tab="checker">URL Checker</button>
+  <button data-tab="settings">Settings</button>
+</nav>
+<main>
+  <div class="warn"><b>Honest note — please read:</b> this page alone cannot send email by itself and cannot verify traffic, authority or backlinks. Live auto-send needs the optional backend (<code>server.js</code> on Render, with SMTP details in env vars — never in chat or in the repo). Until a mailbox is connected through the backend, every mail in the Queue is <b>manual only</b>: copy the draft, send it from your own mailbox, then press <b>Mark Sent</b>. Nothing here is ever marked sent unless the SMTP server accepts it or you confirm you sent it yourself.</div>
+
+  <section id="dashboard" class="active">
+    <div class="grid" id="stats"></div>
+    <div class="card"><h2>Pipeline</h2><p class="muted">New → Queued → Sent → Replied → Price received → Order confirmed — client select karo:</p><div class="row" style="max-width:320px"><select id="pipelineClient" onchange="renderStats()"></select></div><div id="pipeline" style="margin-top:8px"></div></div>
+    <div class="card"><h2>Kaise use karein (Roman Urdu)</h2>
+      <ol>
+        <li><b>Naya client:</b> All Clients tab mein <b>+ Naya Client</b> form — naam, niche, rules, sender aur template likho. Client save hote hi har jagah aajayega (Prospects, Templates, Campaign, URL Checker). Purane presets sirf examples hain.</li>
+        <li><b>Team &amp; Senders:</b> apni Gmail / Hostinger ID add karo. Warmup on rakho — pehle 15/day.</li>
+        <li><b>Prospects:</b> Casino Top 50 pehle se loaded hai (example). Client filter badlo, nayi site add karo ya list paste karo — har client ke apne prospects hote hain.</li>
+        <li><b>Templates:</b> client select karo — usi client ka fixed email copy karo (budget, link ya attachment nahi).</li>
+        <li><b>Campaign &amp; Queue:</b> client select karo → Campaign banao → Build Queue dabao. Har sender ki lane ek saath chalegi, har lane mein 6–7 minute ka gap. Queue mein usi client ka template lagta hai.</li>
+        <li><b>Queue:</b> har mail ka time aane par backend se Send karo, ya khud mailbox se bhej kar Mark Sent dabao. Reply aaye to Mark Replied dabao.</li>
+        <li><b>URL Checker:</b> client select karo, site ka URL paste karo — checklist usi client ki rules se banti hai. Ye Pass/Fail <b>nahi banata</b> jab tak Semrush/Ahrefs API key na ho. Settings mein key paste karo.</li>
+      </ol></div>
+  </section>
+
+  <section id="clients">
+    <div class="card"><h2>+ Naya Client</h2>
+      <p class="muted">Ye tool kisi ek client ya niche ke liye nahi — purane, naye aur future sab clients aur sara kaam ek hi jagah. Neeche form bharo: client save hote hi ye Clients board, pipeline, Prospects, Templates, Campaign aur URL Checker mein aajayega. Macfox, ELEGOO, Casino, Qiolor aur Black Friday sirf presets/examples hain — unhe edit ya delete nahi kar sakte, apne client ko kar sakte ho.</p>
+      <div class="formgrid">
+        <div><label>Client ka naam *</label><input id="ncName" placeholder="e.g. NewBrand"></div>
+        <div><label>Niche (likho ya choose karo — suggestion hai, zabardasti nahi)</label><input id="ncNiche" list="nicheList" placeholder="e.g. e-commerce"><datalist id="nicheList"><option value="e-bikes"></option><option value="tech / 3D printing"></option><option value="casino / iGaming"></option><option value="e-commerce"></option><option value="health"></option><option value="finance"></option><option value="travel"></option><option value="SaaS"></option><option value="fashion"></option><option value="food"></option><option value="education"></option></datalist></div>
+        <div><label>Sender ka naam</label><input id="ncSenderName" placeholder="e.g. Muhammad Sadiq"></div>
+        <div><label>Sender ka title</label><input id="ncSenderTitle" placeholder="e.g. Founder &amp; Owner, MS SEO Agency"></div>
+        <div class="full"><label>Sender email (is client ke liye kaunsi ID se mail jayegi)</label><input id="ncSenderEmail" placeholder="e.g. foundermsseoagency@gmail.com"></div>
+        <div><label>Min monthly organic traffic (optional)</label><input id="ncTraffic" placeholder="e.g. 10000"></div>
+        <div><label>Min Authority Score (optional)</label><input id="ncAS" placeholder="e.g. 30"></div>
+        <div><label>Price cap $/post (optional)</label><input id="ncPrice" placeholder="e.g. 500"></div>
+        <div class="row full"><label class="chk"><input type="checkbox" id="ncDofollow" checked> Dofollow required</label><label class="chk"><input type="checkbox" id="ncPermanent" checked> Permanent required</label><label class="chk"><input type="checkbox" id="ncNoUpfront" checked> No upfront payment</label></div>
+        <div class="full"><label>Requirements — har line pe ek rule likho (free form)</label><textarea id="ncRules" placeholder="e.g.&#10;US/UK audience&#10;No gambling content&#10;Exclude news/review sites"></textarea></div>
+        <div class="full"><label>Email subject (template) — khaali chhodo to generic template ban jayega</label><input id="ncSubject" placeholder="e.g. Guest Post Backlinks"></div>
+        <div class="full"><label>Email body (template) — zero-placeholder: na [Brand], na [Website Name], na budget/link/attachment</label><textarea id="ncBody" placeholder="Hello, ..."></textarea></div>
+        <div class="full"><label>Day-3 follow-up (optional)</label><textarea id="ncFollow" placeholder="Hello, just following up ..."></textarea></div>
+      </div>
+      <div class="row" style="margin-top:12px"><button class="btn" onclick="addClient()">Save client — har jagah add karo</button></div>
+    </div>
+    <div class="card"><h2>All Clients</h2><p class="muted">Har client ki requirement preset hai. Prospect aur campaign banate waqt wahi preset lagta hai.</p><div id="clientBoard"></div></div>
+  </section>
+
+  <section id="team">
+    <div class="card"><h2>Team</h2><div class="row"><input id="newUserName" placeholder="Student ka naam"><select id="newUserRole"><option value="student">Student</option><option value="admin">Admin</option></select><button class="btn" onclick="addUser()">Add user</button></div><div id="userList"></div></div>
+    <div class="card"><h2>Senders — parallel lanes</h2><p class="muted">Har sender ki apni lane hai. Sab lanes ek saath chalti hain — rotation nahi. Warmup: nayi ID 15/day. Gap: 6–7 minute per lane. Password yahan <b>save mat karo</b> — backend ke liye env vars mein daalo (Settings dekho).</p>
+      <div class="row"><input id="senderEmail" placeholder="email, e.g. foundermsseoagency@gmail.com"><select id="senderProvider"><option value="gmail">Gmail</option><option value="hostinger">Hostinger</option></select><input id="senderLabel" placeholder="Label, e.g. Aqib Ali — Casino"><button class="btn" onclick="addSender()">Add Sender</button></div>
+      <div class="grid" id="senderLanes" style="margin-top:12px"></div></div>
+  </section>
+
+  <section id="prospects">
+    <div class="card"><h2>Prospects</h2>
+      <p class="muted">Casino Top 50 neeche pehle se loaded hai — wo sirf ek example client hai. Client filter badlo to us client ke prospects dikhenge; naya client add karo to uske prospects is filter mein aayenge. Source: casino-top-50-high-response-2026-11-10.xlsx — Top 50 ranked from the 170 already checked (50 + 120), <b>NOT 50 new brands</b>. Traffic / DR / Authority Score / price <span class="chip unverified">Unverified</span> — kisi site ko buying prove nahi hai, reply/order ki guarantee nahi hai. Email: named decision-maker jahan mila, warna pehli public email.</p>
+      <div class="row"><input id="prospectFilter" placeholder="Search name / domain / email" oninput="renderProspects()"><select id="prospectClient" onchange="renderProspects()"><option value="Casino">Casino</option><option value="Macfox">Macfox</option><option value="Elegoo">ELEGOO</option><option value="Qiolor">Qiolor</option><option value="Black Friday">Black Friday</option></select></div>
+      <table><thead><tr><th>#</th><th>Site</th><th>Email</th><th>WhatsApp</th><th>Status</th></tr></thead><tbody id="prospectRows"></tbody></table>
+      <h3>Add a prospect</h3>
+      <div class="row"><input id="pDomain" placeholder="domain, e.g. example.com"><input id="pEmail" placeholder="email (optional)"><input id="pPhone" placeholder="phone (optional)"><button class="btn" onclick="addProspect()">Add</button></div>
+    </div>
+  </section>
+
+  <section id="templates">
+    <div class="card"><h2>Templates — per client</h2>
+      <p class="muted">Har client ka apna template: client select karo to usi client ka fixed email dikhega — copy karo, subject/body mein koi placeholder nahi, no budget/link/attachment. Naya client add karte waqt apna template likha ho to wahi dikhega, warna generic template ban jayega (us client ke sender + niche se). Casino ka template wahi settled zero-placeholder wala hai.</p>
+      <div class="row" style="max-width:320px"><select id="templateClient" onchange="renderTemplate()"></select></div>
+      <p><b>Subject:</b> <span id="tSubject"></span></p>
+      <pre id="tBody"></pre>
+      <p class="muted" id="tFrom"></p>
+      <div class="row"><button class="btn" onclick="copyText(document.getElementById('tBody').innerText)">Copy email body</button><button class="btn ghost" onclick="copyText(document.getElementById('tSubject').innerText)">Copy subject</button></div>
+      <h3>Day-3 follow-up</h3><pre id="tFollow"></pre>
+      <button class="btn ghost" onclick="copyText(document.getElementById('tFollow').innerText)">Copy follow-up</button>
+    </div>
+  </section>
+
+  <section id="campaign">
+    <div class="card"><h2>Campaign &amp; Queue</h2>
+      <div class="row"><input id="campName" value="Casino Top 50 — Nov 2026"><select id="campClient"><option>Casino</option><option>Macfox</option><option>ELEGOO</option><option>Qiolor</option><option>Black Friday</option></select><button class="btn" onclick="buildQueue()">Build Queue (parallel lanes)</button><button class="btn ghost" onclick="sendDue()">Send due now (backend)</button></div>
+      <p class="muted">Build Queue: har eligible prospect ko ek mail milti hai, sender lanes mein baant kar. Har lane mein 6–7 min gap, warmup cap 15/lane/day. Backend connected nahi hai to queue <b>manual only</b> rahegi — mail khud bhejo, phir Mark Sent dabao.</p>
+      <div id="queueStats"></div>
+      <table><thead><tr><th>#</th><th>To</th><th>From (lane)</th><th>Scheduled</th><th>Status</th><th>Action</th></tr></thead><tbody id="queueRows"></tbody></table>
+    </div>
+  </section>
+
+  <section id="checker">
+    <div class="card"><h2>URL Checker — last 1 month backlinks</h2>
+      <p class="muted">Client select karo — checklist usi client ki apni rules se banegi (preset ho ya aapka naya client). Har rule <b>Unverified</b> dikhega jab tak evidence ya API key se verified check na ho.</p>
+      <div class="row"><input id="checkUrl" placeholder="https://example.com"><select id="checkPreset"><option value="casino">Casino</option><option value="macfox">Macfox</option><option value="elegoo">ELEGOO</option></select><button class="btn" onclick="runChecker()">Check</button></div>
+      <div id="checkResult"><p class="muted">Paste a site URL. This page cannot fetch real backlinks and cannot verify Semrush/Ahrefs data by itself.</p></div>
+    </div>
+  </section>
+
+  <section id="settings">
+    <div class="card"><h2>Settings</h2>
+      <p class="muted">API keys yahan sirf <b>is browser</b> mein save hoti hain (localStorage). Unhe kabhi chat ya repo mein mat bhejo.</p>
+      <label>Semrush API key (optional)</label><input id="semrushKey" type="password" placeholder="Paste key to enable verified traffic checks">
+      <label>Ahrefs API key (optional)</label><input id="ahrefsKey" type="password" placeholder="Paste key to enable verified backlink checks">
+      <div class="row" style="margin-top:10px"><button class="btn" onclick="saveKeys()">Save keys (this browser only)</button><button class="btn ghost" onclick="clearAll()">Clear all saved data</button></div>
+      <h3>Backend (live auto-send) — Render</h3>
+      <p class="muted">Render free web service banao → repo ye folder → Start command <code>npm start</code> → Environment variables: <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_APP_PASSWORD</code>. Phir is page ka <b>Backend URL</b> neeche daalo, phir Queue mein “Send via backend” kaam karega.</p>
+      <label>Backend URL (optional, e.g. https://msseoagency.onrender.com)</label><input id="backendUrl" placeholder="https://...">
+      <button class="btn" onclick="saveBackend()">Save backend URL</button>
+      <p class="muted" id="backendStatus"></p>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
