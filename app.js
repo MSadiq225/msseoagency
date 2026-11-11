@@ -318,8 +318,10 @@ window.markSent = function (i) { const q = state.queue[i]; q.status = 'Sent (man
 window.markReplied = function (i) { const q = state.queue[i]; q.status = 'replied'; const p = state.prospects.find(x => x.email === q.email); if (p) p.status = 'replied'; save(); renderAll(); };
 window.sendOne = async function (i) {
   const q = state.queue[i];
-  const base = (state.backendUrl || '').replace(/\/$/, '');
-  if (!base) { alert('Backend connected nahi hai — Backend URL Settings mein daalo (Render URL), ya khud mailbox se bhej kar Mark Sent dabao. Ye mail sent mark NAHI hui.'); return; }
+  // Backend URL khaali ho to isi site ka backend use karo (same origin).
+  // Render ya kisi aur backend ke liye Settings mein uska URL daal do.
+  const base = (state.backendUrl || window.location.origin || '').replace(/\/$/, '');
+  if (!base || base === 'null') { alert('Backend connected nahi hai — Backend URL Settings mein daalo (Render URL), ya khud mailbox se bhej kar Mark Sent dabao. Ye mail sent mark NAHI hui.'); return; }
   q.status = 'sending'; renderQueue();
   try {
     const res = await fetch(base + '/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ to: q.email, subject: q.subject, body: q.body, from: q.sender }) });
@@ -357,8 +359,8 @@ window.saveBackend = function () { state.backendUrl = document.getElementById('b
 window.clearAll = function () { if (confirm('Is browser ka sara saved data delete kar dun?')) { localStorage.removeItem(STORE); state = blankState(); save(); renderAll(); } };
 window.checkBackend = async function () {
   const chip = document.getElementById('backendChip');
-  const base = (state.backendUrl || '').replace(/\/$/, '');
-  if (!base) { chip.textContent = 'Backend: not connected (manual only)'; chip.className = 'chip unverified'; return; }
+  const base = (state.backendUrl || window.location.origin || '').replace(/\/$/, '');
+  if (!base || base === 'null') { chip.textContent = 'Backend: not connected (manual only)'; chip.className = 'chip unverified'; return; }
   try {
     const res = await fetch(base + '/api/health');
     const data = await res.json();
